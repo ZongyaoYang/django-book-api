@@ -10,11 +10,17 @@ class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    
-    @action(detail=True, methods=['post'])
+
+    @action(detail=True, methods=["post"])
     def mark_unavailable(self, request, pk=None):
         book = self.get_object()
         book.is_available = False
         book.save()
         serializer = self.get_serializer(book)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["get"])
+    def list_available(self, request):
+        available_books = self.get_queryset().filter(is_available=True)
+        serializer = self.get_serializer(available_books, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
