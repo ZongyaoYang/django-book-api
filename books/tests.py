@@ -77,3 +77,21 @@ class BookAPITest(APITestCase):
         self.book.refresh_from_db()
         self.assertFalse(self.book.is_available)
         
+        
+    def test_list_available_excludes_unavailable_books(self):
+        Book.objects.create(
+            title="Children of Dune",
+            author=self.author,
+            isbn="9780441104024",
+            pages=555,
+            published_date="1976-04-01",
+            is_available=False,
+        )
+        
+        response = self.client.get("/api/books/list_available/")
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        titles = [book["title"] for book in response.data]
+        self.assertIn("Dune", titles)
+        self.assertNotIn("Children of Dune", titles)
+        
