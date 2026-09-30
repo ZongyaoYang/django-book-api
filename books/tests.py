@@ -65,3 +65,15 @@ class BookAPITest(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Book.objects.count(), 2)
+        
+    def test_mark_unavailable(self):
+        user = User.objects.create_user(username="tester2", password="testpass123")
+        self.client.force_authenticate(user=user)
+        
+        url = f"/api/books/{self.book.id}/mark_unavailable/"
+        response = self.client.post(url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.book.refresh_from_db()
+        self.assertFalse(self.book.is_available)
+        
